@@ -38,7 +38,7 @@ public class LoadingTipsConfig {
 		}
 	}
 
-	public void loadOnline() {
+	public void loadOnline(Runnable complete) {
 		if (url.isEmpty()) {
 			return;
 		}
@@ -47,6 +47,7 @@ public class LoadingTipsConfig {
 				String onlineJson = IOUtils.toString(new URL(url), StandardCharsets.UTF_8);
 				onlineTips = GSON.fromJson(onlineJson, new TypeToken<List<String>>() {
 				}.getType());
+				complete.run();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

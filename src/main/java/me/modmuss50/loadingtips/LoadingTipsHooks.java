@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Random;
 
 import static org.lwjgl.opengl.GL11.glTranslatef;
 
@@ -16,7 +17,8 @@ public class LoadingTipsHooks {
 	private static FontRenderer fontRenderer = null;
 	private static LoadingTipsConfig config;
 	private static int frames = 1;
-	private static int tipNum;
+	private static String tip;
+	private static Random random = new Random();
 
 	private static void setup() {
 		try {
@@ -32,7 +34,8 @@ public class LoadingTipsHooks {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load loadingtips config", e);
 		}
-		config.loadOnline();
+		config.loadOnline(LoadingTipsHooks::updateTip); //Forces the tips to reload once the online tips have been loaded otherwise you will see the same few tips at the start of the loading
+		updateTip();
 	}
 
 	public static void draw() {
@@ -47,18 +50,19 @@ public class LoadingTipsHooks {
 		GL11.glPushMatrix();
 		{
 			glTranslatef(0, 0, 0);
-			List<String> tips = config.getAllTips();
-			String tip = tips.get(tipNum);
+
 			drawString(tip, config.color);
 		}
 		GL11.glPopMatrix();
 		frames++;
 		if (frames % 500 == 0) {
-			tipNum++;
-			if (tipNum == config.getAllTips().size()) {
-				tipNum = 0;
-			}
+			updateTip();
 		}
+	}
+
+	private static void updateTip(){
+		List<String> tips = config.getAllTips();
+		tip = tips.get(random.nextInt(tips.size()));
 	}
 
 	private static void drawString(String text, int col) {
