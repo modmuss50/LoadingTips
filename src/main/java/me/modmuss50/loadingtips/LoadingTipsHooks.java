@@ -18,6 +18,7 @@ public class LoadingTipsHooks {
 	private static LoadingTipsConfig config;
 	private static int frames = 1;
 	private static String tip;
+	private static int tipId = 0;
 	private static Random random = new Random();
 
 	private static void setup() {
@@ -34,8 +35,8 @@ public class LoadingTipsHooks {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load loadingtips config", e);
 		}
-		config.loadOnline(LoadingTipsHooks::updateTip); //Forces the tips to reload once the online tips have been loaded otherwise you will see the same few tips at the start of the loading
-		updateTip();
+		config.loadOnline(LoadingTipsHooks::nextTip); //Forces the tips to reload once the online tips have been loaded otherwise you will see the same few tips at the start of the loading
+		nextTip();
 	}
 
 	public static void draw() {
@@ -50,19 +51,28 @@ public class LoadingTipsHooks {
 		GL11.glPushMatrix();
 		{
 			glTranslatef(0, 0, 0);
-
 			drawString(tip, config.color);
 		}
 		GL11.glPopMatrix();
 		frames++;
 		if (frames % 500 == 0) {
-			updateTip();
+			nextTip();
 		}
 	}
 
-	private static void updateTip(){
-		List<String> tips = config.getAllTips();
-		tip = tips.get(random.nextInt(tips.size()));
+	private static void nextTip(){
+		List<String> tips = config.getTips();
+		if(tips.isEmpty()){
+			tip = "";
+			System.out.println("no tips in config");
+			return;
+		}
+		tipId++;
+		if(tipId >= tips.size()){
+			tipId = 0;
+		}
+		tip = tips.get(tipId);
+		System.out.println("tip: " + tip);
 	}
 
 	private static void drawString(String text, int col) {

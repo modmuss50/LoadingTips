@@ -1,6 +1,7 @@
 package me.modmuss50.loadingtips;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,7 +23,10 @@ public class LoadingTipsConfig {
 	public List<String> tips = new ArrayList<>();
 
 	public transient List<String> onlineTips = null;
-	private static final Gson GSON = new Gson();
+	public transient List<String> allTips;
+	private transient boolean refreshList = false;
+
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	public static LoadingTipsConfig load(File configFile) throws IOException {
 		if (configFile.exists()) {
@@ -47,6 +52,7 @@ public class LoadingTipsConfig {
 				String onlineJson = IOUtils.toString(new URL(url), StandardCharsets.UTF_8);
 				onlineTips = GSON.fromJson(onlineJson, new TypeToken<List<String>>() {
 				}.getType());
+				refreshList = true;
 				complete.run();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -54,7 +60,15 @@ public class LoadingTipsConfig {
 		}).start();
 	}
 
-	public List<String> getAllTips() {
+	public List<String> getTips() {
+		if(refreshList || tips == null){
+			tips = getAllTips();
+			Collections.shuffle(tips);
+		}
+		return tips;
+	}
+
+	private List<String> getAllTips() {
 		if (onlineTips == null) {
 			return tips.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
 		}
