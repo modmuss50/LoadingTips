@@ -61,11 +61,11 @@ public class LoadingTipsConfig {
 	}
 
 	public List<String> getTips() {
-		if(refreshList || tips == null){
-			tips = getAllTips();
-			Collections.shuffle(tips);
+		if(refreshList || allTips == null){
+			allTips = getAllTips();
+			Collections.shuffle(allTips);
 		}
-		return tips;
+		return allTips;
 	}
 
 	private List<String> getAllTips() {
